@@ -1,33 +1,37 @@
-version: '3.7'
+version: '3.9'
 
 services:
   web:
     build: .
+    container_name: django_web
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/app
+      - ./backend:/app
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/shopping_cart
-      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       - db
       - redis
 
   db:
-    image: postgres:13
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=shopping_cart
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:
